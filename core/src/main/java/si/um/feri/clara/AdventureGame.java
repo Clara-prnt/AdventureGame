@@ -36,9 +36,7 @@ public class AdventureGame extends ApplicationAdapter {
     private BitmapFont font;
 
     private Rectangle player;
-    private Array<Rectangle> villains;
-    private Array<Rectangle> carrots;
-    private Array<Rectangle> goldenCarrots;
+    private Array<Entity> entities;
 
     private float currentHealth = 100f;
     private boolean isGameOver = false;
@@ -75,9 +73,7 @@ public class AdventureGame extends ApplicationAdapter {
         font = new BitmapFont();
         scoreBoard = "Score: " + score;
 
-        villains = new Array<>();
-        carrots = new Array<>();
-        goldenCarrots = new Array<>();
+        entities = new Array<>();
         createCharacter();
     }
 
@@ -91,20 +87,21 @@ public class AdventureGame extends ApplicationAdapter {
     public void spawnCarrot() {
         Rectangle carrot = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - carrotImg.getWidth() - PADDING),
             MathUtils.random(PADDING, Gdx.graphics.getHeight() - carrotImg.getHeight() - PADDING), carrotImg.getWidth(), carrotImg.getHeight());
-        carrots.add(carrot);
+        entities.add(new Entity(carrot, Entity.Type.CARROT));
     }
 
     public void spawnGoldenCarrot() {
         Rectangle goldenCarrot = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - carrotImg.getWidth() - PADDING),
             MathUtils.random(PADDING, Gdx.graphics.getHeight() - carrotImg.getHeight() - PADDING), carrotImg.getWidth(), carrotImg.getHeight());
-        goldenCarrots.add(goldenCarrot);
+        entities.add(new Entity(goldenCarrot, Entity.Type.GOLDEN_CARROT));;
     }
 
     public void spawnVillain() {
         Rectangle villain = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - villainImg.getWidth() - PADDING),
             Gdx.graphics.getHeight(), villainImg.getWidth(), villainImg.getHeight());
-        villains.add(villain);
+        entities.add(new Entity(villain, Entity.Type.VILLAIN));;
     }
+
 
     @Override
     public void render() {
@@ -119,9 +116,7 @@ public class AdventureGame extends ApplicationAdapter {
         batch.begin();
         drawBackground();
         drawPlayer();
-        drawVillains();
-        drawCarrots();
-        drawGoldenCarrots();
+        drawEntities();
         drawScoreBoard();
         batch.end();
 
@@ -142,9 +137,7 @@ public class AdventureGame extends ApplicationAdapter {
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && isGameOver) {
             createCharacter();
-            villains.clear();
-            carrots.clear();
-            goldenCarrots.clear();
+            entities.clear();
             currentHealth = 100f;
             score = 0;
             scoreBoard = "Score: " + score;
@@ -203,42 +196,41 @@ public class AdventureGame extends ApplicationAdapter {
             }
         }
 
-        for(Iterator<Rectangle> villainIterator = villains.iterator(); villainIterator.hasNext();) {
-            Rectangle villain = villainIterator.next();
-            villain.y -= VILLAIN_SPEED * delta;
-            if (villain.overlaps(player)) {
-                villainIterator.remove();
-                currentHealth -= 10f;
-                scoreBoard = "Score: " + score;
-                if (currentHealth <= 0f) {
-                    gameOver();
-                }
-                damageSound.play();
-            }
-
-            if (villain.y + villain.height < 0f) {
-                villainIterator.remove();
-            }
-        }
-
-        for (Iterator<Rectangle> carrotIterator = carrots.iterator(); carrotIterator.hasNext(); ) {
-            Rectangle carrot = carrotIterator.next();
-            if (carrot.overlaps(player)) {
-                rewardSound.play();
-                score++;
-                scoreBoard = "Score: " + score;
-                carrotIterator.remove();
-            }
-        }
-
-        for (Iterator<Rectangle> goldenCarrotIterator = goldenCarrots.iterator(); goldenCarrotIterator.hasNext(); ) {
-            Rectangle goldenCarrot = goldenCarrotIterator.next();
-            if (goldenCarrot.overlaps(player)) {
-                rewardSound.play();
-                score++;
-                scoreBoard = "Score: " + score;
-                currentHealth += 10f;
-                goldenCarrotIterator.remove();
+        for (Iterator<Entity> iterator = entities.iterator(); iterator.hasNext(); ) {
+            Entity entity = iterator.next();
+            switch (entity.type) {
+                case VILLAIN:
+                    entity.rectangle.y -= VILLAIN_SPEED * delta;
+                    if (entity.rectangle.overlaps(player)) {
+                        iterator.remove();
+                        currentHealth -= 10f;
+                        scoreBoard = "Score: " + score;
+                        if (currentHealth <= 0f) {
+                            gameOver();
+                        }
+                        damageSound.play();
+                    }
+                    if (entity.rectangle.y + entity.rectangle.height < 0f) {
+                        iterator.remove();
+                    }
+                    break;
+                case CARROT:
+                    if (entity.rectangle.overlaps(player)) {
+                        rewardSound.play();
+                        score++;
+                        scoreBoard = "Score: " + score;
+                        iterator.remove();
+                    }
+                    break;
+                case GOLDEN_CARROT:
+                    if (entity.rectangle.overlaps(player)) {
+                        rewardSound.play();
+                        score++;
+                        scoreBoard = "Score: " + score;
+                        currentHealth += 10f;
+                        iterator.remove();
+                    }
+                    break;
             }
         }
     }
@@ -247,21 +239,20 @@ public class AdventureGame extends ApplicationAdapter {
     private void drawBackground(){
         batch.draw(backgroundImg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
-    private void drawCarrots() {
-        for (Rectangle carrot : carrots) {
-            batch.draw(carrotImg, carrot.x, carrot.y, carrot.width, carrot.height);
-        }
-    }
 
-    private void drawGoldenCarrots() {
-        for (Rectangle goldenCarrot : goldenCarrots) {
-            batch.draw(goldenCarrotImg, goldenCarrot.x, goldenCarrot.y, goldenCarrot.width, goldenCarrot.height);
-        }
-    }
-
-    private void drawVillains() {
-        for (Rectangle villain : villains) {
-            batch.draw(villainImg, villain.x, villain.y, villain.width, villain.height);
+    private void drawEntities() {
+        for (Entity entity : entities) {
+            switch (entity.type) {
+                case VILLAIN:
+                    batch.draw(villainImg, entity.rectangle.x, entity.rectangle.y, entity.rectangle.width, entity.rectangle.height);
+                    break;
+                case CARROT:
+                    batch.draw(carrotImg, entity.rectangle.x, entity.rectangle.y, entity.rectangle.width, entity.rectangle.height);
+                    break;
+                case GOLDEN_CARROT:
+                    batch.draw(goldenCarrotImg, entity.rectangle.x, entity.rectangle.y, entity.rectangle.width, entity.rectangle.height);
+                    break;
+            }
         }
     }
 
