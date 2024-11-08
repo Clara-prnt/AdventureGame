@@ -93,13 +93,13 @@ public class AdventureGame extends ApplicationAdapter {
     public void spawnGoldenCarrot() {
         Rectangle goldenCarrot = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - carrotImg.getWidth() - PADDING),
             MathUtils.random(PADDING, Gdx.graphics.getHeight() - carrotImg.getHeight() - PADDING), carrotImg.getWidth(), carrotImg.getHeight());
-        entities.add(new Entity(goldenCarrot, Entity.Type.GOLDEN_CARROT));;
+        entities.add(new Entity(goldenCarrot, Entity.Type.GOLDEN_CARROT));
     }
 
     public void spawnVillain() {
         Rectangle villain = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - villainImg.getWidth() - PADDING),
             Gdx.graphics.getHeight(), villainImg.getWidth(), villainImg.getHeight());
-        entities.add(new Entity(villain, Entity.Type.VILLAIN));;
+        entities.add(new Entity(villain, Entity.Type.VILLAIN));
     }
 
 
@@ -225,9 +225,13 @@ public class AdventureGame extends ApplicationAdapter {
                 case GOLDEN_CARROT:
                     if (entity.rectangle.overlaps(player)) {
                         rewardSound.play();
-                        score++;
+                        if (currentHealth <= 90f){
+                            currentHealth += 10f;
+                            score++;
+                        } else {
+                            score += 10;
+                        }
                         scoreBoard = "Score: " + score;
-                        currentHealth += 10f;
                         iterator.remove();
                     }
                     break;
