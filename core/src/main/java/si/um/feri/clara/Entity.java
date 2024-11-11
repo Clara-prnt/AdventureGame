@@ -9,9 +9,21 @@ public class Entity {
 
     public Rectangle rectangle;
     public Type type;
+    public String direction = null;
 
     public Entity(Rectangle rectangle, Type type) {
         this.rectangle = rectangle;
         this.type = type;
+        if (type == Type.VILLAIN) {
+            this.direction = "down";
+        }
+    }
+
+    public Entity(Rectangle rectangle, Type type, String throwingDirection) {
+        this.rectangle = rectangle;
+        this.type = type;
+        if (type == Type.EGG) {
+            this.direction = throwingDirection;
+        }
     }
 }

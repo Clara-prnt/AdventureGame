@@ -1,6 +1,7 @@
 package si.um.feri.clara;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
@@ -14,9 +15,10 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Random;
 
-/** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
+/** {@link ApplicationListener} implementation shared by all platforms. */
 public class AdventureGame extends ApplicationAdapter {
     private SpriteBatch batch;
     ShapeRenderer shapeRenderer;
@@ -109,7 +111,7 @@ public class AdventureGame extends ApplicationAdapter {
     public void spawnEgg() {
         Rectangle egg = new Rectangle(player.x + player.width / 2 - (float) eggImg.getWidth() / 2,
             player.y + player.height / 2 - (float) eggImg.getHeight() / 2, eggImg.getWidth(), eggImg.getHeight());
-        entities.add(new Entity(egg, Entity.Type.EGG));
+        entities.add(new Entity(egg, Entity.Type.EGG, throwingDirection));
     }
 
 
@@ -155,7 +157,7 @@ public class AdventureGame extends ApplicationAdapter {
         }
 
         if (currentHealth > 0f) {
-            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)){
                 characterImg = new Texture("./assets/big_right_player.png");
                 player.x += PLAYER_SPEED * delta;
                 if(player.x > Gdx.graphics.getWidth() - player.getWidth() - PADDING) {
@@ -163,7 +165,7 @@ public class AdventureGame extends ApplicationAdapter {
                 }
                 throwingDirection = "right";
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
                 characterImg = new Texture("./assets/big_left_player.png");
                 player.x -= PLAYER_SPEED * delta;
                 if(player.x < player.getWidth()) {
@@ -171,7 +173,7 @@ public class AdventureGame extends ApplicationAdapter {
                 }
                 throwingDirection = "left";
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) {
                 characterImg = new Texture("./assets/big_up_player.png");
                 player.y += PLAYER_SPEED * delta;
                 if(player.y > Gdx.graphics.getHeight() - player.getHeight() - PADDING) {
@@ -179,7 +181,7 @@ public class AdventureGame extends ApplicationAdapter {
                 }
                 throwingDirection = "up";
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) {
                 characterImg = new Texture("./assets/big_down_player.png");
                 player.y -= PLAYER_SPEED * delta;
                 if(player.y < player.getHeight()) {
@@ -188,8 +190,8 @@ public class AdventureGame extends ApplicationAdapter {
                 throwingDirection = "down";
             }
 
-            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-                    spawnEgg();
+            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                spawnEgg();
             }
         }
     }
@@ -228,6 +230,7 @@ public class AdventureGame extends ApplicationAdapter {
                         }
                         damageSound.play();
                     }
+
                     if (entity.rectangle.y + entity.rectangle.height < 0f) {
                         iterator.remove();
                     }
@@ -254,7 +257,7 @@ public class AdventureGame extends ApplicationAdapter {
                     }
                     break;
                 case EGG:
-                    switch (throwingDirection) {
+                    switch (entity.direction) {
                         case "up":
                             entity.rectangle.y += EGG_SPEED * delta;
                             break;
@@ -267,14 +270,6 @@ public class AdventureGame extends ApplicationAdapter {
                         case "right":
                             entity.rectangle.x += EGG_SPEED * delta;
                             break;
-                    }
-                    for (Entity otherEntity : entities) {
-                        if (otherEntity.type == Entity.Type.VILLAIN && entity.rectangle.overlaps(otherEntity.rectangle)) {
-                            iterator.remove();
-                            otherEntity.rectangle.y = Gdx.graphics.getHeight();
-                            score++;
-                            scoreBoard = "Score: " + score;
-                        }
                     }
 
                     if (entity.rectangle.y + entity.rectangle.height < 0f || entity.rectangle.y > Gdx.graphics.getHeight() ||
