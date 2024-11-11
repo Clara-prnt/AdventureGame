@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 public class Entity {
     public enum Type {
-        VILLAIN, CARROT, GOLDEN_CARROT
+        VILLAIN, CARROT, GOLDEN_CARROT, EGG
     }
 
     public Rectangle rectangle;

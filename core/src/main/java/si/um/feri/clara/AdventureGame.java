@@ -25,6 +25,7 @@ public class AdventureGame extends ApplicationAdapter {
     private Texture villainImg;
     private Texture carrotImg;
     private Texture goldenCarrotImg;
+    private Texture eggImg;
     private Texture backgroundImg;
 
     private Sound rewardSound;
@@ -43,11 +44,13 @@ public class AdventureGame extends ApplicationAdapter {
 
     private float villainSpawnTimer = 0f;
     private float carrotSpawnTimer = 0f;
+    private String throwingDirection = "up";
 
     private static final float PLAYER_SPEED = 200f;
     private static final float VILLAIN_SPAWN_INTERVAL = 3f;
     private static final float CARROT_SPAWN_INTERVAL = 2f;
     private static final float VILLAIN_SPEED = 150f;
+    private static final float EGG_SPEED = 200f;
 
     private static final float BAR_WIDTH = 200f;
     private static final float BAR_HEIGHT = 20f;
@@ -64,6 +67,7 @@ public class AdventureGame extends ApplicationAdapter {
         villainImg = new Texture("./assets/big_villain.png");
         carrotImg = new Texture("./assets/big_carrot.png");
         goldenCarrotImg = new Texture("./assets/golden_carrot.png");
+        eggImg = new Texture("./assets/egg.png");
         backgroundImg = new Texture("./assets/background.jpg");
 
         rewardSound = Gdx.audio.newSound(Gdx.files.internal("./assets/reward.wav"));
@@ -100,6 +104,12 @@ public class AdventureGame extends ApplicationAdapter {
         Rectangle villain = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - villainImg.getWidth() - PADDING),
             Gdx.graphics.getHeight(), villainImg.getWidth(), villainImg.getHeight());
         entities.add(new Entity(villain, Entity.Type.VILLAIN));
+    }
+
+    public void spawnEgg() {
+        Rectangle egg = new Rectangle(player.x + player.width / 2 - (float) eggImg.getWidth() / 2,
+            player.y + player.height / 2 - (float) eggImg.getHeight() / 2, eggImg.getWidth(), eggImg.getHeight());
+        entities.add(new Entity(egg, Entity.Type.EGG));
     }
 
 
@@ -151,6 +161,7 @@ public class AdventureGame extends ApplicationAdapter {
                 if(player.x > Gdx.graphics.getWidth() - player.getWidth() - PADDING) {
                     player.x = Gdx.graphics.getWidth() - player.getWidth() - PADDING;
                 }
+                throwingDirection = "right";
             }
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
                 characterImg = new Texture("./assets/big_left_player.png");
@@ -158,6 +169,7 @@ public class AdventureGame extends ApplicationAdapter {
                 if(player.x < player.getWidth()) {
                     player.x = player.getWidth();
                 }
+                throwingDirection = "left";
             }
             if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
                 characterImg = new Texture("./assets/big_up_player.png");
@@ -165,6 +177,7 @@ public class AdventureGame extends ApplicationAdapter {
                 if(player.y > Gdx.graphics.getHeight() - player.getHeight() - PADDING) {
                     player.y = Gdx.graphics.getHeight() - player.getHeight() - PADDING;
                 }
+                throwingDirection = "up";
             }
             if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                 characterImg = new Texture("./assets/big_down_player.png");
@@ -172,6 +185,11 @@ public class AdventureGame extends ApplicationAdapter {
                 if(player.y < player.getHeight()) {
                     player.y = player.getHeight();
                 }
+                throwingDirection = "down";
+            }
+
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+                    spawnEgg();
             }
         }
     }
@@ -235,6 +253,35 @@ public class AdventureGame extends ApplicationAdapter {
                         iterator.remove();
                     }
                     break;
+                case EGG:
+                    switch (throwingDirection) {
+                        case "up":
+                            entity.rectangle.y += EGG_SPEED * delta;
+                            break;
+                        case "down":
+                            entity.rectangle.y -= EGG_SPEED * delta;
+                            break;
+                        case "left":
+                            entity.rectangle.x -= EGG_SPEED * delta;
+                            break;
+                        case "right":
+                            entity.rectangle.x += EGG_SPEED * delta;
+                            break;
+                    }
+                    for (Entity otherEntity : entities) {
+                        if (otherEntity.type == Entity.Type.VILLAIN && entity.rectangle.overlaps(otherEntity.rectangle)) {
+                            iterator.remove();
+                            otherEntity.rectangle.y = Gdx.graphics.getHeight();
+                            score++;
+                            scoreBoard = "Score: " + score;
+                        }
+                    }
+
+                    if (entity.rectangle.y + entity.rectangle.height < 0f || entity.rectangle.y > Gdx.graphics.getHeight() ||
+                        entity.rectangle.x + entity.rectangle.width < 0f || entity.rectangle.x > Gdx.graphics.getWidth()) {
+                        iterator.remove();
+                    }
+                    break;
             }
         }
     }
@@ -255,6 +302,9 @@ public class AdventureGame extends ApplicationAdapter {
                     break;
                 case GOLDEN_CARROT:
                     batch.draw(goldenCarrotImg, entity.rectangle.x, entity.rectangle.y, entity.rectangle.width, entity.rectangle.height);
+                    break;
+                case EGG:
+                    batch.draw(eggImg, entity.rectangle.x, entity.rectangle.y, entity.rectangle.width, entity.rectangle.height);
                     break;
             }
         }
@@ -298,9 +348,11 @@ public class AdventureGame extends ApplicationAdapter {
         villainImg.dispose();
         carrotImg.dispose();
         goldenCarrotImg.dispose();
+        eggImg.dispose();
         backgroundImg.dispose();
         rewardSound.dispose();
         damageSound.dispose();
         font.dispose();
+        shapeRenderer.dispose();
     }
 }
