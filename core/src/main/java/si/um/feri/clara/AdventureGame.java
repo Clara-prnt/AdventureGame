@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.Random;
 
 /** {@link ApplicationListener} implementation shared by all platforms. */
@@ -52,7 +51,7 @@ public class AdventureGame extends ApplicationAdapter {
     private static final float VILLAIN_SPAWN_INTERVAL = 3f;
     private static final float CARROT_SPAWN_INTERVAL = 2f;
     private static final float VILLAIN_SPEED = 150f;
-    private static final float EGG_SPEED = 200f;
+    private static final float EGG_SPEED = 300f;
 
     private static final float BAR_WIDTH = 200f;
     private static final float BAR_HEIGHT = 20f;
@@ -270,6 +269,17 @@ public class AdventureGame extends ApplicationAdapter {
                         case "right":
                             entity.rectangle.x += EGG_SPEED * delta;
                             break;
+                    }
+
+                    for (int i = 0; i < entities.size; i++) {
+                        Entity otherEntity = entities.get(i);
+                        if (otherEntity.type == Entity.Type.VILLAIN && entity.rectangle.overlaps(otherEntity.rectangle)) {
+                            iterator.remove();
+                            entities.removeValue(otherEntity, true);
+                            score += 5;
+                            scoreBoard = "Score: " + score;
+                            rewardSound.play();
+                        }
                     }
 
                     if (entity.rectangle.y + entity.rectangle.height < 0f || entity.rectangle.y > Gdx.graphics.getHeight() ||
