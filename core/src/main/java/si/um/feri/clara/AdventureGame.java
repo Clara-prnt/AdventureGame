@@ -58,6 +58,10 @@ public class AdventureGame extends ApplicationAdapter {
     private static final float BAR_PADDING = 10f;
     private static final float PADDING = 20f;
 
+    /**
+     * Called when the {@link ApplicationListener} is first created.
+     * Initializes the game objects and sounds and initializes the game.
+     */
     @Override
     public void create() {
         batch = new SpriteBatch();
@@ -82,6 +86,9 @@ public class AdventureGame extends ApplicationAdapter {
         createCharacter();
     }
 
+    /**
+     * Creates the character object.
+     */
     public void createCharacter() {
         characterImg = new Texture("./assets/big_down_player.png");
         player = new Rectangle(Gdx.graphics.getWidth() / 2f - characterImg.getWidth() / 2f,
@@ -89,31 +96,47 @@ public class AdventureGame extends ApplicationAdapter {
 
     }
 
+    /**
+     * Create a carrot object and adds it to the entities array.
+     */
     public void spawnCarrot() {
         Rectangle carrot = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - carrotImg.getWidth() - PADDING),
             MathUtils.random(PADDING, Gdx.graphics.getHeight() - carrotImg.getHeight() - PADDING), carrotImg.getWidth(), carrotImg.getHeight());
         entities.add(new Entity(carrot, Entity.Type.CARROT));
     }
 
+    /**
+     * Create a golden carrot (booster) object and adds it to the entities array.
+     */
     public void spawnGoldenCarrot() {
         Rectangle goldenCarrot = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - carrotImg.getWidth() - PADDING),
             MathUtils.random(PADDING, Gdx.graphics.getHeight() - carrotImg.getHeight() - PADDING), carrotImg.getWidth(), carrotImg.getHeight());
         entities.add(new Entity(goldenCarrot, Entity.Type.GOLDEN_CARROT));
     }
 
+    /**
+     * Create a villain object and adds it to the entities array.
+     */
     public void spawnVillain() {
         Rectangle villain = new Rectangle(MathUtils.random(PADDING, Gdx.graphics.getWidth() - villainImg.getWidth() - PADDING),
             Gdx.graphics.getHeight(), villainImg.getWidth(), villainImg.getHeight());
         entities.add(new Entity(villain, Entity.Type.VILLAIN));
     }
 
+    /**
+     * Create an egg object and adds it to the entities array.
+     * The egg is thrown in the direction the player is facing.
+     */
     public void spawnEgg() {
         Rectangle egg = new Rectangle(player.x + player.width / 2 - (float) eggImg.getWidth() / 2,
             player.y + player.height / 2 - (float) eggImg.getHeight() / 2, eggImg.getWidth(), eggImg.getHeight());
         entities.add(new Entity(egg, Entity.Type.EGG, throwingDirection));
     }
 
-
+    /**
+     * Called when the screen should render itself.
+     * Handles input, updates the game state, and renders the game objects.
+     */
     @Override
     public void render() {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
@@ -142,6 +165,14 @@ public class AdventureGame extends ApplicationAdapter {
         }
     }
 
+    /**
+     * Handles the input from the user.
+     * The player can move the character using the arrow keys or WASD keys.
+     * The player can throw an egg using the left mouse button.
+     * The player can restart the game by pressing the space key when GAME OVER.
+     * The player can exit the game by pressing the escape key.
+     * @param delta The time in seconds since the last render (1 frame).
+     */
     private void handleInput(float delta) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
@@ -195,6 +226,15 @@ public class AdventureGame extends ApplicationAdapter {
         }
     }
 
+    /**
+     * Updates the game state.
+     * Spawns villains and carrots at regular intervals.
+     * Updates the position of the entities.
+     * Checks for collisions between entities.
+     * Updates the score and health.
+     * Ends the game if the health reaches 0.
+     * @param delta The time in seconds since the last render (1 frame).
+     */
     private void update(float delta) {
         Random rand = new Random();
         int roll = rand.nextInt(10);
@@ -271,6 +311,7 @@ public class AdventureGame extends ApplicationAdapter {
                             break;
                     }
 
+                    // Check if the egg hits a villain + cannot use iterator inside another iterator
                     for (int i = 0; i < entities.size; i++) {
                         Entity otherEntity = entities.get(i);
                         if (otherEntity.type == Entity.Type.VILLAIN && entity.rectangle.overlaps(otherEntity.rectangle)) {
@@ -291,11 +332,17 @@ public class AdventureGame extends ApplicationAdapter {
         }
     }
 
-
+    /**
+     * Draws the background image.
+     */
     private void drawBackground(){
         batch.draw(backgroundImg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
+    /**
+     * Draws the entities on the screen.
+     * All entities are seen as rectangles.
+     */
     private void drawEntities() {
         for (Entity entity : entities) {
             switch (entity.type) {
@@ -315,17 +362,29 @@ public class AdventureGame extends ApplicationAdapter {
         }
     }
 
+
+    /**
+     * Draws the player character on the screen.
+     */
     private void drawPlayer() {
         batch.draw(characterImg, player.x, player.y, player.width, player.height);
     }
 
-
+    /**
+     * Draws the score board on the screen.
+     * Initializes the font and setting the color as black.
+     */
     public void drawScoreBoard() {
         font.getData().setScale(2);
         font.setColor(0, 0, 0, 1);
         font.draw(batch, scoreBoard, 10, Gdx.graphics.getHeight() - 10);
     }
 
+    /**
+     * Draws the health bar on the screen.
+     * The health bar is a rectangle.
+     * When the health lowers, the green part of the bar decreases, letting the red part appears.
+     */
     private void drawHealthBar() {
         float healthPercentage = currentHealth / 100f;
         shapeRenderer.setColor(1, 0, 0, 1); // Red
@@ -334,6 +393,10 @@ public class AdventureGame extends ApplicationAdapter {
         shapeRenderer.rect(BAR_PADDING, Gdx.graphics.getHeight() - BAR_PADDING - BAR_HEIGHT - font.getLineHeight(), BAR_WIDTH * healthPercentage, BAR_HEIGHT);
     }
 
+    /**
+     * Draws the 'game over' message on the screen.
+     * Initializes the font and setting the color as red.
+     */
     private void drawGameOver() {
         font.getData().setScale(2);
         font.setColor(1, 0, 0, 1);
@@ -341,11 +404,19 @@ public class AdventureGame extends ApplicationAdapter {
             Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f);
     }
 
+    /**
+     * Called when the player loses all health.
+     * Plays the game over sound and sets the game state to 'game over'.
+     */
     public void gameOver() {
         isGameOver = true;
         gameOverSound.play();
     }
 
+    /**
+     * Called when the {@link ApplicationListener} is destroyed.
+     * Disposes of the game objects and sounds.
+     */
     @Override
     public void dispose() {
         batch.dispose();

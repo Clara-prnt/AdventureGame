@@ -2,6 +2,10 @@ package si.um.feri.clara;
 
 import com.badlogic.gdx.math.Rectangle;
 
+/**
+ * Represents an entity in the game.
+ * Every type is a Rectangle but with different properties.
+ */
 public class Entity {
     public enum Type {
         VILLAIN, CARROT, GOLDEN_CARROT, EGG
